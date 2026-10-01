@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ComicCraft — AI Comic Story Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fbf9f5;
+      --fg: #1f1b16;
+      --card: #ffffff;
+      --primary: #d12f2f;
+      --primary-fg: #ffffff;
+      --secondary: #f0c242;
+      --secondary-fg: #1f1b16;
+      --muted: #ece7de;
+      --muted-fg: #6b6357;
+      --border: #1f1b16;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: 'Comic Neue', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background-image: radial-gradient(rgba(31, 27, 22, 0.08) 1.5px, transparent 1.5px);
+      background-size: 12px 12px;
+      padding: 40px 16px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1.title {
+      font-family: 'Bangers', cursive;
+      font-size: 4rem;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      text-shadow: 3px 3px 0 var(--fg);
+      line-height: 1;
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      font-size: 1.1rem;
+      color: var(--muted-fg);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .comic-box {
+      background: var(--card);
+      border: 3px solid var(--border);
+      box-shadow: 6px 6px 0 rgba(31, 27, 22, 0.9);
+      border-radius: 8px;
+      padding: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 640px) {
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(209, 47, 47, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px 24px;
+      background: var(--primary);
+      color: var(--primary-fg);
+      font-family: 'Bangers', cursive;
+      font-size: 1.75rem;
+      letter-spacing: 0.04em;
+      border: 3px solid var(--border);
+      box-shadow: 5px 5px 0 var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0 var(--border);
+    }
+
+    .btn-submit:active:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 3px 3px 0 var(--border);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    /* Progress section */
+    .progress-section {
+      margin-top: 32px;
+      text-align: center;
+      display: none;
+    }
+
+    .progress-title {
+      font-family: 'Bangers', cursive;
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      color: var(--fg);
+    }
+
+    .progress-bar-wrap {
+      max-width: 450px;
+      height: 14px;
+      margin: 12px auto 0;
+      border: 2px solid var(--border);
+      background: var(--card);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Error Box */
+    .error-box {
+      margin-top: 28px;
+      padding: 16px;
+      border: 3px solid var(--primary);
+      box-shadow: 5px 5px 0 rgba(209, 47, 47, 0.4);
+      background: #fff5f5;
+      border-radius: 8px;
+      text-align: center;
+      display: none;
+    }
+
+    .error-box p {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    /* Comic Presentation */
+    .comic-result {
+      margin-top: 48px;
+      display: none;
+    }
+
+    .comic-header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .comic-display-title {
+      font-family: 'Bangers', cursive;
+      font-size: 3rem;
+      letter-spacing: 0.03em;
+      color: var(--fg);
+    }
+
+    .btn-pdf {
+      background: var(--secondary);
+      color: var(--secondary-fg);
+      font-family: 'Bangers', cursive;
+      font-size: 1.4rem;
+      padding: 10px 20px;
+      border: 2.5px solid var(--border);
+      box-shadow: 4px 4px 0 var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.1s;
+    }
+
+    .btn-pdf:hover {
+      transform: translate(-2px, -2px);
+    }
+
+    .panels-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    @media (min-width: 760px) {
+      .panels-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+      }
+    }
+
+    .panel-card {
+      background: #ffffff;
+      border: 3px solid var(--border);
+      box-shadow: 5px 5px 0 var(--border);
+      border-radius: 0;
+      overflow: hidden;
+      padding: 0;
+      position: relative;
+    }
+
+    .panel-art {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: var(--muted);
+      overflow: hidden;
+    }
+
+    .panel-image-container {
+      width: 100%;
+      height: 100%;
+      background: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .panel-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Number badge, similar to the reference image */
+    .panel-badge {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 5;
+
+      width: 52px;
+      height: 52px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: #ffd21c;
+      color: #111111;
+
+      border-right: 3px solid var(--border);
+      border-bottom: 3px solid var(--border);
+
+      font-family: 'Bangers', cursive;
+      font-size: 1.8rem;
+    }
+
+    /* Dialogue appears over the image */
+    .image-dialogue {
+      position: absolute;
+      top: 22px;
+      right: 18px;
+      max-width: 72%;
+      z-index: 4;
+    }
+
+    .speech-bubble {
+      position: relative;
+      background: #ffffff;
+      border: 3px solid var(--border);
+      border-radius: 18px;
+      padding: 11px 15px;
+      box-shadow: 3px 3px 0 rgba(31, 27, 22, 0.25);
+    }
+
+    .speech-bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -13px;
+      left: 28px;
+
+      width: 16px;
+      height: 16px;
+
+      background: #ffffff;
+      border-right: 3px solid var(--border);
+      border-bottom: 3px solid var(--border);
+
+      transform: rotate(45deg);
+    }
+
+    .speech-bubble p {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.25;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    /* Story section underneath the image */
+    .panel-story {
+      background: #ffffff;
+    }
+
+    .panel-heading {
+      padding: 12px 15px 8px;
+
+      font-family: 'Bangers', cursive;
+      font-size: 1.45rem;
+      letter-spacing: 0.04em;
+      line-height: 1.05;
+
+      color: #111111;
+      font-style: italic;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .panel-narration {
+      padding: 13px 15px;
+
+      background: #111111;
+      color: #ffffff;
+
+      font-family: 'Comic Neue', sans-serif;
+      font-size: 0.98rem;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .panel-caption {
+      padding: 11px 15px 14px;
+
+      background: #f4f1eb;
+      color: #222222;
+
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.3;
+
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Keep redraw available without disturbing the layout */
+    .panel-actions {
+      padding: 10px 15px 13px;
+      background: #f4f1eb;
+      border-top: 1px solid #d8d1c6;
+    }
+
+    .btn-redraw {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      padding: 6px 12px;
+
+      background: var(--secondary);
+      border: 2px solid var(--border);
+      border-radius: 4px;
+
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted-fg);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <header>
+      <h1 class="title">ComicCraft</h1>
+      <p class="subtitle">
+        Type a story idea — get a complete 5-panel comic, written and illustrated by AI, ready to download as a PDF.
+      </p>
+    </header>
+
+    <div class="comic-box">
+      <form id="comicForm">
+        <div class="form-group">
+          <label for="prompt">Story Prompt</label>
+          <textarea id="prompt" required
+            placeholder="A young inventor builds a robot friend who dreams of becoming a chef..."></textarea>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="character">Main Character</label>
+            <input type="text" id="character" required placeholder="Maya, a curious girl with goggles">
+          </div>
+          <div class="form-group">
+            <label for="setting">Setting</label>
+            <input type="text" id="setting" required placeholder="A bustling floating city">
+          </div>
+          <div class="form-group">
+            <label for="tone">Story Tone</label>
+            <select id="tone">
+              {% for tone in tones %}
+              <option value="{{ tone }}">{{ tone }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="artStyle">Art Style</label>
+            <select id="artStyle">
+              {% for style in art_styles %}
+              <option value="{{ style }}">{{ style }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" id="generateBtn" class="btn-submit">
+          <span id="btnIcon">✨</span>
+          <span id="btnText">Generate Comic!</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Progress UI -->
+    <div id="progressSection" class="progress-section">
+      <div id="progressTitle" class="progress-title">Writing the story...</div>
+      <div class="progress-bar-wrap">
+        <div id="progressBarFill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Error Box -->
+    <div id="errorBox" class="error-box">
+      <p id="errorMessage"></p>
+    </div>
+
+    <!-- Comic Presentation -->
+    <div id="comicResult" class="comic-result">
+      <div class="comic-header-bar">
+        <h2 id="comicTitle" class="comic-display-title"></h2>
+        <button id="downloadPdfBtn" class="btn-pdf">
+          📥 Download PDF
+        </button>
+      </div>
+
+      <div id="panelsGrid" class="panels-grid"></div>
+    </div>
+
+    <footer>
+      ComicCraft — AI Comic Story Creator powered by FastAPI,
+      Gemini and Stable Diffusion XL
+    </footer>
+  </div>
+
+  <script>
+    let currentComic = null;
+
+    const form = document.getElementById('comicForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
+    const progressSection = document.getElementById('progressSection');
+    const progressTitle = document.getElementById('progressTitle');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const errorBox = document.getElementById('errorBox');
+    const errorMessage = document.getElementById('errorMessage');
+    const comicResult = document.getElementById('comicResult');
+    const comicTitle = document.getElementById('comicTitle');
+    const panelsGrid = document.getElementById('panelsGrid');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      comicResult.style.display = 'none';
+      progressSection.style.display = 'block';
+      generateBtn.disabled = true;
+      btnText.textContent = 'Crafting your comic...';
+      progressTitle.textContent = 'Writing the story...';
+      progressBarFill.style.width = '15%';
+
+      const payload = {
+        prompt: document.getElementById('prompt').value.trim(),
+        character: document.getElementById('character').value.trim(),
+        setting: document.getElementById('setting').value.trim(),
+        tone: document.getElementById('tone').value,
+        art_style: document.getElementById('artStyle').value
+      };
+
+      try {
+        // Step 1: Generate comic story script
+        const res = await fetch('/generate-comic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Failed to generate comic story.');
+        }
+
+        currentComic = await res.json();
+        renderComicLayout(currentComic);
+        comicResult.style.display = 'block';
+
+        // Step 2: Sequentially generate images for each panel
+        for (let i = 0; i < currentComic.panels.length; i++) {
+          const panel = currentComic.panels[i];
+          progressTitle.textContent = `Drawing panels... ${i + 1} of 5`;
+          progressBarFill.style.width = `${15 + ((i + 1) / 5) * 85}%`;
+
+          await drawPanel(i, panel.image_prompt, payload.art_style);
+        }
+
+        progressSection.style.display = 'none';
+        generateBtn.disabled = false;
+        btnText.textContent = 'Generate Comic!';
+
+      } catch (err) {
+        progressSection.style.display = 'none';
+        generateBtn.disabled = false;
+        btnText.textContent = 'Generate Comic!';
+        errorMessage.textContent = err.message || 'Something went wrong. Please check your API key.';
+        errorBox.style.display = 'block';
+      }
+    });
+
+    async function drawPanel(index, imagePrompt, artStyle) {
+      const imgContainer = document.getElementById(`panel-img-${index}`);
+      try {
+        const res = await fetch('/generate-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_prompt: imagePrompt,
+            art_style: artStyle,
+            panel_number: index + 1
+          })
+        });
+
+        if (!res.ok) throw new Error('Image gen failed');
+        const data = await res.json();
+        currentComic.panels[index].image_url = data.image_url;
+
+        imgContainer.innerHTML = `<img src="${data.image_url}" alt="Panel ${index + 1} illustration">`;
+      } catch (err) {
+        currentComic.panels[index].failed = true;
+        imgContainer.innerHTML = `
+          <div style="text-align: center; padding: 16px;">
+            <p style="color: var(--muted-fg); font-size: 0.85rem; margin-bottom: 8px;">Image failed</p>
+            <button class="btn-redraw" onclick="redrawPanel(${index})">🔄 Redraw</button>
+          </div>
+        `;
+      }
+    }
+
+    window.redrawPanel = async function (index) {
+      const panel = currentComic.panels[index];
+      const imgContainer = document.getElementById(`panel-img-${index}`);
+      imgContainer.innerHTML = `<div class="panel-spinner"></div>`;
+      await drawPanel(index, panel.image_prompt, currentComic.art_style);
+    };
+
+    function renderComicLayout(comic) {
+      comicTitle.textContent = comic.title;
+      panelsGrid.innerHTML = '';
+
+      comic.panels.forEach((p, idx) => {
+        const card = document.createElement('article');
+        card.className = 'panel-card';
+
+        const heading = (
+          p.panel_heading ||
+          `SCENE ${idx + 1}`
+        ).toUpperCase();
+
+        const narration =
+          p.scene_description ||
+          p.caption ||
+          '';
+
+        const caption =
+          p.caption ||
+          '';
+
+        card.innerHTML = `
+          <div class="panel-art">
+
+            <div
+              class="panel-badge"
+              aria-label="Panel ${idx + 1}"
+            >
+              ${idx + 1}
+            </div>
+
+            <div
+              id="panel-img-${idx}"
+              class="panel-image-container"
+            >
+              <div class="panel-spinner"></div>
+            </div>
+
+            ${
+              p.dialogue
+                ? `
+                  <div class="image-dialogue">
+                    <div class="speech-bubble">
+                      <p>
+                        "${escapeHtml(p.dialogue)}"
+                      </p>
+                    </div>
+                  </div>
+                `
+                : ''
+            }
+
+          </div>
+
+          <div class="panel-story">
+
+            <div class="panel-heading">
+              ${escapeHtml(heading)}
+            </div>
+
+            <div class="panel-narration">
+              ${escapeHtml(narration)}
+            </div>
+
+            ${
+              caption
+                ? `
+                  <div class="panel-caption">
+                    ${escapeHtml(caption)}
+                  </div>
+                `
+                : ''
+            }
+
+            <div class="panel-actions">
+              <button
+                class="btn-redraw"
+                onclick="redrawPanel(${idx})"
+              >
+                🔄 Redraw
+              </button>
+            </div>
+
+          </div>
+        `;
+
+        panelsGrid.appendChild(card);
+      });
+    }
+
+    downloadPdfBtn.addEventListener('click', async () => {
+      if (!currentComic) return;
+      downloadPdfBtn.disabled = true;
+      downloadPdfBtn.textContent = 'Building PDF...';
+
+      try {
+        const res = await fetch('/download-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: currentComic.title,
+            panels: currentComic.panels,
+            art_style: currentComic.art_style
+          })
+        });
+
+        if (!res.ok) throw new Error('PDF export failed');
+        const data = await res.json();
+        window.open(data.pdf_url, '_blank');
+      } catch (e) {
+        alert('Could not export PDF: ' + e.message);
+      } finally {
+        downloadPdfBtn.disabled = false;
+        downloadPdfBtn.textContent = '📥 Download PDF';
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+
+</html>

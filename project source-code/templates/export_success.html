@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export Success — ComicCraft</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #fbf9f5;
+      font-family: 'Comic Neue', sans-serif;
+      padding: 40px 16px;
+      color: #1f1b16;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+    .card {
+      max-width: 500px;
+      width: 100%;
+      background: #ffffff;
+      border: 3px solid #1f1b16;
+      box-shadow: 6px 6px 0 #1f1b16;
+      border-radius: 8px;
+      padding: 36px;
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Bangers', cursive;
+      color: #d12f2f;
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 12px 24px;
+      background: #f0c242;
+      color: #1f1b16;
+      font-family: 'Bangers', cursive;
+      font-size: 1.4rem;
+      text-decoration: none;
+      border: 2px solid #1f1b16;
+      box-shadow: 4px 4px 0 #1f1b16;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Comic Exported!</h1>
+    <p>Your comic has been generated into a comic-strip PDF.</p>
+    {% if pdf_url %}
+    <p style="margin-top: 16px;"><a href="{{ pdf_url }}" class="btn" target="_blank">📥 Open Downloaded PDF</a></p>
+    {% endif %}
+    <p style="margin-top: 24px;"><a href="/" style="color: #666; font-size: 0.95rem;">← Create Another Comic</a></p>
+  </div>
+</body>
+</html>
